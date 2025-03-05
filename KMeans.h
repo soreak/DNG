@@ -27,7 +27,10 @@ void kmeans(std::vector<Node>& nodes, std::vector<Node>& centroids, size_t dim)
 
         // 创建一个 Node 对象，将其赋为该数据点
         Node centroid_node = nodes[random_index];
-        
+
+        //设置节点所属的聚类中心
+        centroid_node.setCentroid(k);
+
         // 将该 Node 对象加入聚类中心列表
         centroids.push_back(centroid_node);
     }
@@ -64,5 +67,6 @@ void assign_to_clusters(
         nodes[i].setCentroid(assigned_cluster);  // 设置节点所属的聚类中心
         clusters[assigned_cluster].push_back(nodes[i]);  // 将节点加入对应的聚类中心
     }
+
 }
 

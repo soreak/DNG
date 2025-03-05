@@ -1,17 +1,25 @@
 #include <iostream>
 #include <vector>
-
+#include <set>
 
 #ifndef C
-    #define C 10  // 聚类数量
+    #define C 5  // 聚类数量
 #endif
 
 #ifndef N
-    #define N 30   // 数据点数量
+    #define N 50   // 数据点数量
 #endif
 
 #ifndef DIM
     #define DIM 5  // 数据点维度，
+#endif
+
+#ifndef K_neighbor
+    #define K_neighbor 3  // 邻居数量
+#endif
+
+#ifndef iterations
+    #define iterations 2  // 迭代次数
 #endif
 
 
@@ -19,7 +27,8 @@
 #include "..\KMeans.h"
 #include "..\Read.h"
 
-#include "..\Neighbors.h"
+#include "..\KNNGraph.h"
+#include "..\RNN-descent.h"
 
 int main(){
     size_t d;
@@ -31,14 +40,31 @@ int main(){
     // std::cout << "读取完成 ";
    
      std::vector<Node> nodes;
+     std::set<std::vector<float>> unique_points;
 
     // insertToNodes(xt,d,nt,nodes);
     // std::cout << "插入完成 ";
 
       // 随机生成节点
-    for (int i = 0; i < N; i++) {
+      for (int i = 0; i < N; i++) {
         Node node(DIM, i);
-        std::vector<float> features(DIM, static_cast<float>(rand() % 10));
+
+        // 随机生成
+        std::vector<float> features(DIM);
+        for (int j = 0; j < DIM; j++) {
+            features[j] = static_cast<float>(rand() % 10);
+        }
+
+        // 检查是否存在重复
+        while (unique_points.find(features) != unique_points.end()) {
+            // 重复重新生成
+            for (int j = 0; j < DIM; j++) {
+                features[j] = static_cast<float>(rand() % 10);
+            }
+        }
+
+        //添加特征
+        unique_points.insert(features);
         node.setFeatures(features);
         nodes.push_back(node);
     }
@@ -54,9 +80,12 @@ int main(){
         std::cout << "Centroid " << i << ": ";
         
         const std::vector<float>& features = centroids[i].getFeatures();
+        int id = centroids[i].getId();
         for (float feature : features) {
             std::cout << feature << " ";
         }
+        std::cout << "Node Id :" << id << "";
+        std::cout << "Centroid Id :" << centroids[i].centroid_id << "";
         
         std::cout << std::endl;
     }
@@ -64,11 +93,19 @@ int main(){
     // 为节点分配聚类
     std::vector<Node> clusters[C];
     assign_to_clusters(nodes, centroids, DIM,clusters); 
+
     
-    KNNGraph::buildKNNGraph(centroids,3);
+    KNNGraph::buildKNNGraph(centroids,K_neighbor);
 
-    KNNGraph::printKNNGraph(centroids);
+     KNNGraph::printKNNGraph(centroids);
 
+    std::vector<Node> graph = centroids;
+    
+    KNNGraph::insertKNNGraph(nodes,graph,K_neighbor);
+
+    //KNNGraph::printKNNGraph(nodes);
+
+    RNNDescent(nodes,K_neighbor,iterations);
 
     return 0;
 
