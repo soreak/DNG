@@ -6,8 +6,6 @@
 #include <queue>
 #include <omp.h>
 
-// 假设L2Float::compare已经实现
-
 // 使用priority_queue管理每个节点的邻居，保持排序
 struct Neighbor {
     int id;
@@ -109,10 +107,10 @@ void RNNDescent(std::vector<Node>& nodes, int K, int max_iterations) {
         }
 
         // 在每一轮结束时打印当前的邻居
-        std::cout << "Iteration " << iteration + 1 << " completed." << std::endl;
-        for (size_t i = 0; i < nodes.size(); i++) {
-            nodes[i].print();
-        }
+        // std::cout << "Iteration " << iteration + 1 << " completed." << std::endl;
+        // for (size_t i = 0; i < nodes.size(); i++) {
+        //     nodes[i].print();
+        // }
     }
 }
 

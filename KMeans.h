@@ -69,4 +69,3 @@ void assign_to_clusters(
     }
 
 }
-

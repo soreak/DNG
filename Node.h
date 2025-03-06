@@ -59,3 +59,11 @@ public:
         std::cout << "\n";
     }
 };
+std::ostream& operator<<(std::ostream& os, const Node& node) {
+    os << "Node ID: " << node.getId() << "\n";
+    os << "Features: ";
+    for (const auto& feature : node.getFeatures()) {
+        os << feature << " ";
+    }
+    return os;
+}
