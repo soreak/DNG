@@ -1,7 +1,8 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
+#include <unordered_set>
 
 #include "Node.h"
 #ifndef C
@@ -21,18 +22,28 @@
 // 选择 K-means 初始化聚类中心
 void kmeans(std::vector<Node>& nodes, std::vector<Node>& centroids, size_t dim)
 {
+    std::unordered_set<int> selected_indices;  // 用于追踪已选择的索引
+
     // 随机选择 C 个聚类中心
     for (int k = 0; k < C; k++) {
-        int random_index = rand() % N; // 随机选择一个数据点
+        int random_index;
+
+        // 确保随机选择的索引不重复
+        do {
+            random_index = rand() % N;  // 随机选择一个数据点
+        } while (selected_indices.find(random_index) != selected_indices.end());  // 检查是否已经选择过
 
         // 创建一个 Node 对象，将其赋为该数据点
         Node centroid_node = nodes[random_index];
 
-        //设置节点所属的聚类中心
+        // 设置节点所属的聚类中心
         centroid_node.setCentroid(k);
 
         // 将该 Node 对象加入聚类中心列表
         centroids.push_back(centroid_node);
+
+        // 将该索引标记为已选择
+        selected_indices.insert(random_index);
     }
 }
 
@@ -43,7 +54,7 @@ void assign_to_clusters(
     // 为每个节点计算与聚类中心的距离，并将其分配给最近的聚类中心
     for (size_t i = 0; i < nodes.size(); i++)
     {
-        float min_distance = DBL_MAX;
+        float min_distance = 1e38f;
         int assigned_cluster = -1;
 
         // 计算该节点到所有聚类中心的距离

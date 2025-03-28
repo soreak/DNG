@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -15,6 +15,7 @@ struct Neighbor {
     }
 };
 
+
 void RNNDescent(std::vector<Node>& nodes, int K, int max_iterations) {
     bool changed = false;
 
@@ -22,7 +23,8 @@ void RNNDescent(std::vector<Node>& nodes, int K, int max_iterations) {
         changed = false;
         
         // 并行化处理每个节点的邻居更新
-        #pragma omp parallel for
+        //（需要更新）
+        //#pragma omp parallel for
         for (size_t i = 0; i < nodes.size(); i++) {
             Node& node = nodes[i];
 

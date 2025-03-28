@@ -1,8 +1,10 @@
-#pragma once
+﻿#pragma once
 #include "INode.h"
 #include <vector>
 #include <iostream>
 #include <cmath> 
+
+#include "Distance.h"
 
 class Node : public INode {
 public:
@@ -11,6 +13,7 @@ public:
     std::vector<float> distances;
     int id;
     int centroid_id;
+    int reverse_edge_add;
 
     Node(int dim, int node_id) : features(dim, 0.0f), id(node_id) {}
 
@@ -46,17 +49,17 @@ public:
 
     void print() const override {
         std::cout << "Node ID: " << id << "\n";
-        std::cout << "Centroid ID: " << centroid_id << "\n";
+        //std::cout << "Centroid ID: " << centroid_id << "\n";
         std::cout << "Features: ";
         for (const auto& feature : features) {
             std::cout << feature << " ";
         }
         std::cout << "\n";
-        std::cout << "Neighbors: ";
-        for (size_t i = 0; i < neighbors.size(); i++) {
-            std::cout << "(" << neighbors[i] << ", " << distances[i] << ") ";
-        }
-        std::cout << "\n";
+        // std::cout << "Neighbors: ";
+        // for (size_t i = 0; i < neighbors.size(); i++) {
+        //     std::cout << "(" << neighbors[i] << ", " << distances[i] << ") ";
+        // }
+        // std::cout << "\n";
     }
 };
 std::ostream& operator<<(std::ostream& os, const Node& node) {

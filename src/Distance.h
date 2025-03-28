@@ -1,9 +1,8 @@
 #pragma once
-#include <intrin.h>
 #include <stdexcept>
-#include <x86intrin.h>
-#include <math.h> 
+#include <math.h>
 #include <vector>
+
 
 class L2Float {
 public:
@@ -30,7 +29,7 @@ public:
             a += 4;
             b += 4;
         }
-        
+
         // Process last 0-3 elements
         while (a < last) {
             diff0 = *a++ - *b++;
