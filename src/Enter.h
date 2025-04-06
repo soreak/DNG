@@ -1,3 +1,4 @@
+#pragma once
 #include "Node.h"
 
 int findNearestCentroid(const std::vector<Node>& centroids, const Node& query_point) {

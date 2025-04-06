@@ -7,11 +7,11 @@
 using namespace std::chrono;  // 方便使用时间函数
 
 #ifndef C
-    #define C 5  // 聚类数量
+    #define C 20  // 聚类数量
 #endif
 
 #ifndef N
-    #define N 200   // 数据点数量
+    #define N 2000   // 数据点数量
 #endif
 
 #ifndef DIM
@@ -19,7 +19,7 @@ using namespace std::chrono;  // 方便使用时间函数
 #endif
 
 #ifndef K_neighbor
-    #define K_neighbor 4  // 邻居数量
+    #define K_neighbor 6  // 邻居数量
 #endif
 
 #ifndef iterations
@@ -142,7 +142,7 @@ int main(){
     // 选择一个查询点
     Node query_point(4, -1);  // 假设查询点是 nodes 中的第一个
     query_point.setFeatures({
-        1, 1, 1, 1
+        1, 2, 0, 0
     });
 
 
@@ -189,6 +189,8 @@ int main(){
               << " ms\n";
 
     KNNGraph::buildKNNGraph(nodes,centroids, K_neighbor);
+
+    KNNGraph::printKNNGraph(centroids);
 
     KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor,Max_Reverse_Edges);
 

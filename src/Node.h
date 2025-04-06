@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath> 
 
+
 #include "Distance.h"
 
 class Node : public INode {
@@ -23,6 +24,9 @@ public:
 
     const int& getId() const override {
         return id;
+    }
+    void setId(int new_id) override {
+        id = new_id;
     }
 
     void setFeatures(const std::vector<float>& new_features) override {
@@ -55,11 +59,11 @@ public:
             std::cout << feature << " ";
         }
         std::cout << "\n";
-        // std::cout << "Neighbors: ";
-        // for (size_t i = 0; i < neighbors.size(); i++) {
-        //     std::cout << "(" << neighbors[i] << ", " << distances[i] << ") ";
-        // }
-        // std::cout << "\n";
+        std::cout << "Neighbors: ";
+        for (size_t i = 0; i < neighbors.size(); i++) {
+            std::cout << "(" << neighbors[i] << ", " << distances[i] << ") ";
+        }
+        std::cout << "\n";
     }
 };
 std::ostream& operator<<(std::ostream& os, const Node& node) {

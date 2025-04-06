@@ -13,42 +13,73 @@
 
 class KNNGraph {
 public:
-    // 构建 KNN 主干网络
-    static void buildKNNGraph(std::vector<Node>& nodes, std::vector<Node>& centroids,int K_nerighbor) {
-        // 遍历每个节点
-        for (size_t i = 0; i < centroids.size(); i++) {
-            std::vector<std::pair<int, float>> distances;  // 存储当前节点与其他节点的距离
+static void buildKNNGraph(std::vector<Node>& nodes, std::vector<Node>& centroids, int K_nerighbor) {
+    for (size_t i = 0; i < centroids.size(); i++) {
+        std::vector<std::pair<int, float>> distances;
 
-            // 遍历所有其他节点计算距离
-            for (size_t j = 0; j < centroids.size(); j++) {
-                if (i == j) continue;  // 排除自己与自己的距离
+        // 计算所有点到当前点的距离
+        for (size_t j = 0; j < centroids.size(); j++) {
+            if (i == j) continue;
+            float dist = centroids[i].computeDistance(centroids[j]);
+            distances.emplace_back(centroids[j].getId(), dist);
+        }
 
-                // 计算当前节点与第 j 个节点的距离
-                float dist = centroids[i].computeDistance(centroids[j]);
+        // 按距离排序
+        std::sort(distances.begin(), distances.end(), [](const std::pair<int, float>& a, const std::pair<int, float>& b) {
+            return a.second < b.second;
+        });
 
-                // 将距离和节点 ID 存储在一起
-                distances.push_back(std::make_pair(centroids[j].getId(), dist));
+        // 选择最近的 K_nerighbor 个邻居
+        std::vector<std::pair<int, float>> selected_neighbors(distances.begin(), distances.begin() + K_nerighbor);
+        
+        // 执行裁边，确保均匀分布
+        std::vector<int> final_neighbors;
+        std::vector<float> final_distances;
+        std::vector<std::vector<float>> directions; // 方向向量集合
+
+        for (auto& [neighbor_id, dist] : selected_neighbors) {
+            std::vector<float> direction;
+            for (size_t j = 0; j < centroids[i].features.size(); j++) {
+                direction.push_back(centroids[i].features[j] - nodes[neighbor_id].features[j]);
             }
 
-            // 按照距离升序排列
-            std::sort(distances.begin(), distances.end(), [](const std::pair<int, float>& a, const std::pair<int, float>& b) {
-                return a.second < b.second;
-            });
-
-            // 选择 K 个最近的邻居并加入节点的邻居列表
-            for (int k = 0; k < K_nerighbor; k++) {
-                // 获取最近的 K 个邻居的 ID 和距离
-                int neighbor_id = distances[k].first;
-                float distance = distances[k].second;
-
-                // 添加邻居
-                centroids[i].addNeighbor(neighbor_id, distance);
-                nodes[centroids[i].getId()].addNeighbor(neighbor_id,distance);
+            // 计算与已有邻居的最大方向相似度
+            float max_similarity = 0.0;
+            for (const auto& d : directions) {
+                max_similarity = std::max(max_similarity, cosineSimilarity(d, direction));
             }
 
-            //添加裁边策略
+            // 允许 10% 的方向相似邻居，但优先删除远离当前点的
+            if (max_similarity < 0.9 || final_neighbors.size() < K_nerighbor) {
+                final_neighbors.push_back(neighbor_id);
+                final_distances.push_back(dist);
+                directions.push_back(direction);
+            }
+        }
+
+        // 若最终邻居数量不足 K_nerighbor，从剩余最近的邻居中补充
+        size_t index = K_nerighbor - final_neighbors.size();
+        for (size_t j = 0; j < distances.size() && index > 0; j++) {
+            int neighbor_id = distances[j].first;
+            float dist = distances[j].second;
+            if (std::find(final_neighbors.begin(), final_neighbors.end(), neighbor_id) == final_neighbors.end()) {
+                final_neighbors.push_back(neighbor_id);
+                final_distances.push_back(dist);
+                index--;
+            }
+        }
+
+        // 更新节点邻居信息
+        centroids[i].neighbors = final_neighbors;
+        centroids[i].distances = final_distances;
+
+        // 同时更新原始节点信息
+        for (size_t j = 0; j < final_neighbors.size(); j++) {
+            nodes[centroids[i].getId()].addNeighbor(final_neighbors[j], final_distances[j]);
         }
     }
+}
+
 
 
     // 插入 KNN 图

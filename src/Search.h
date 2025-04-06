@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#pragma once
+#include <iostream>
 #include <vector>
 #include <queue>
 #include <unordered_set>

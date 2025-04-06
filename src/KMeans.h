@@ -1,82 +1,117 @@
-﻿#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <float.h>
-#include <unordered_set>
-
+﻿#pragma once
+#include <vector>
+#include <set>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <algorithm>
 #include "Node.h"
-#ifndef C
-    #define C 1000  // 聚类数量
-#endif
 
-#ifndef N
-    #define N 100000   // 数据点数量
-#endif
-
-#ifndef DIM
-    #define DIM 128  // 数据点维度，
-#endif
-
-
-
-// 选择 K-means 初始化聚类中心
-void kmeans(std::vector<Node>& nodes, std::vector<Node>& centroids, size_t dim)
-{
-    std::unordered_set<int> selected_indices;  // 用于追踪已选择的索引
-
-    // 随机选择 C 个聚类中心
-    for (int k = 0; k < C; k++) {
-        int random_index;
-
-        // 确保随机选择的索引不重复
-        do {
-            random_index = rand() % N;  // 随机选择一个数据点
-        } while (selected_indices.find(random_index) != selected_indices.end());  // 检查是否已经选择过
-
-        // 创建一个 Node 对象，将其赋为该数据点
-        Node centroid_node = nodes[random_index];
-
-        // 设置节点所属的聚类中心
-        centroid_node.setCentroid(k);
-
-        // 将该 Node 对象加入聚类中心列表
-        centroids.push_back(centroid_node);
-
-        // 将该索引标记为已选择
-        selected_indices.insert(random_index);
+class Kmeans {
+public:
+    Kmeans(const std::vector<Node>& data_set, int K = 3, int iteration = 100)
+        : data_set(data_set), K(K), iteration(iteration) {
+        this->num = data_set.size();
     }
+
+    int num; // 样本总数
+    int K; // 聚类个数
+    int iteration; // 最大迭代次数
+    std::vector<Node> centers; // k个中心点
+    std::vector<Node> data_set; // 数据集
+
+    Node QueryCenter(const std::vector<Node>& cluster) const;  // 计算聚类中心点
+    Node QueryRealCenter(const std::vector<Node>& cluster) const;  // 计算真实聚类中心点
+    void Initial();   // 初始化聚类中心
+    std::vector<Node> Process();  // kmeans 主流程
+};
+
+// 计算聚类中心点（非真实数据点）
+Node Kmeans::QueryCenter(const std::vector<Node>& cluster) const {
+    std::vector<float> avg_features(cluster[0].features.size(), 0.0f);
+    for (const auto& node : cluster) {
+        for (size_t i = 0; i < node.features.size(); ++i) {
+            avg_features[i] += node.features[i];
+        }
+    }
+    for (size_t i = 0; i < avg_features.size(); ++i) {
+        avg_features[i] /= cluster.size();
+    }
+    Node center(avg_features.size(), -1);  // 使用 -1 表示虚拟中心点
+    center.setFeatures(avg_features);
+    return center;
 }
 
-// 输出聚类结果，并将节点分配到最近的聚类中心
-void assign_to_clusters(
-    std::vector<Node>& nodes, const std::vector<Node>& centroids, int dim, std::vector<Node> clusters[C])
-{
-    // 为每个节点计算与聚类中心的距离，并将其分配给最近的聚类中心
-    for (size_t i = 0; i < nodes.size(); i++)
-    {
-        float min_distance = 1e38f;
-        int assigned_cluster = -1;
+// 计算真实聚类中心点（数据集中存在的点）
+Node Kmeans::QueryRealCenter(const std::vector<Node>& cluster) const {
+    Node virtual_center = QueryCenter(cluster);
+    float min_distance = std::numeric_limits<float>::max();
+    Node real_center = cluster[0];
+    for (const auto& node : cluster) {
+        float distance = virtual_center.computeDistance(node);
+        if (distance < min_distance) {
+            min_distance = distance;
+            real_center = node;
+        }
+    }
+    return real_center;
+}
 
-        // 计算该节点到所有聚类中心的距离
-        for (int k = 0; k < C; k++)
-        {
-            const std::vector<float>& features = nodes[i].getFeatures();
-            float* pVect1v = const_cast<float*>(features.data());
-            const std::vector<float>& centroid_features = centroids[k].getFeatures();
-            float* pVect2v = const_cast<float*>(centroid_features.data());
-            
-            // 计算节点到聚类中心的距离
-            float dist = L2Float::compare(pVect1v, pVect2v, dim);
-            if (dist < min_distance)
-            {
-                min_distance = dist;
-                assigned_cluster = k;
+// 初始化聚类中心
+void Kmeans::Initial() {
+    srand(static_cast<unsigned>(time(nullptr)));
+    std::set<int> selected_indices;
+    int center_id = 0;  // 聚类中心的 ID 从 0 开始
+    while (centers.size() < K) {
+        int idx = rand() % this->num;
+        if (selected_indices.count(idx)) continue;
+        selected_indices.insert(idx);
+        Node center = data_set[idx];
+        center.setCentroid(center_id++);  // 为每个中心分配从 0 开始的 ID
+        centers.push_back(center);
+    }
+    printf("num : %d ", num);
+}
+
+// kmeans 主流程
+std::vector<Node> Kmeans::Process() {
+    // Step 1: 随机初始化 k 个点作为聚类中心
+    Initial();
+    while (iteration--) {
+        printf("\n============= iteration: %d ===============\n", iteration);
+
+        // Step 2: 每次计算所有点到各个中心的距离，选择一个最小的距离的中心点作为这个样本的类别
+        for (auto& node : data_set) {
+            float min_distance = std::numeric_limits<float>::max();
+            for (auto& center : centers) {
+                float distance = node.computeDistance(center);
+                if (distance < min_distance) {
+                    min_distance = distance;
+                    node.setCentroid(center.centroid_id);
+                }
             }
         }
 
-        // 将节点分配到距离最近的聚类中心
-        nodes[i].setCentroid(assigned_cluster);  // 设置节点所属的聚类中心
-        clusters[assigned_cluster].push_back(nodes[i]);  // 将节点加入对应的聚类中心
-    }
+        // Step 3: 重新计算各个聚类中心
+        for (auto& center : centers) {
+            std::vector<Node> cluster;
+            for (const auto& node : data_set) {
+                if (node.centroid_id == center.centroid_id) {
+                    cluster.push_back(node);
+                }
+            }
+            if (!cluster.empty()) {
+                center = QueryRealCenter(cluster);
+         
+            }
+        }
 
+        // 打印更新后的中心点
+        for (const auto& center : centers) {
+            std::cout << "Updated centroid_id: " << center.centroid_id << std::endl;
+            std::cout << "Updated node_id: " << center.getId() << std::endl;
+            
+        }
+    }
+    return centers;
 }

@@ -10,6 +10,7 @@ public:
 
     virtual const std::vector<float>& getFeatures() const = 0;
     virtual const int& getId() const = 0;
+    virtual void setId(int new_id) = 0;
     virtual void setFeatures(const std::vector<float>& features) = 0;
     virtual void setCentroid(int centroid) = 0;
     virtual float computeDistance(const INode& other) const = 0;

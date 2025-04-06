@@ -13,7 +13,7 @@
     #include <sys/stat.h>
     #include <sys/types.h>
 #endif
-
+#include <sys/stat.h>
 #include "Node.h"
 
 #ifndef READ_H
@@ -37,13 +37,13 @@ float* fvecs_read(const char* fname, size_t* d_out, size_t* n_out) {
     assert((d > 0 && d < 1000000) || !"unreasonable dimension");
     fseek(f, 0, SEEK_SET);
 
-#ifdef _WIN32
-    struct _stat64i32 st;  // 使用 Windows 的 _stat64i32
-    _fstat64i32(_fileno(f), &st);  // 使用 _fstat64i32 替代 fstat
-#else
+// #ifdef _WIN32
+//     struct _stat64i32 st;  // 使用 Windows 的 _stat64i32
+//     _fstat64i32(_fileno(f), &st);  // 使用 _fstat64i32 替代 fstat
+// #else
     struct stat st;
     fstat(fileno(f), &st);
-#endif
+//#endif
 
     size_t sz = st.st_size;
     assert(sz % ((d + 1) * 4) == 0 || !"weird file size");
