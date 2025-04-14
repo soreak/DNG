@@ -16,7 +16,7 @@ dng_graph_module = Extension(
     module_name,
     sources=source_files,
     include_dirs=include_dirs,
-    extra_compile_args=["/std:c++17", "/arch:AVX2", "/fp:fast"],  # 启用 FMA 支持  AVX2 指令集
+    extra_compile_args=["-std=c++17", "-mavx2", "-ffast-math"],  # 启用 FMA 支持  AVX2 指令集
 )
 
 setup(
