@@ -1,22 +1,24 @@
 from setuptools import setup, Extension
 import os
 import pybind11
+import platform
 
 module_name = "dng_graph"
-source_files = [
-    "src/dng.cpp"
-]
+source_files = ["src/dng.cpp"]
+include_dirs = ["src", pybind11.get_include()]
 
-include_dirs = [
-    "src",
-    pybind11.get_include()
-]
+# 自动判断平台来设置编译参数
+if platform.system() == "Windows":
+    compile_args = ["/std:c++17", "/arch:AVX2", "/fp:fast"]
+else:
+    compile_args = ["-std=c++17", "-mavx2", "-ffast-math"]
 
 dng_graph_module = Extension(
     module_name,
     sources=source_files,
     include_dirs=include_dirs,
-    extra_compile_args=["-std=c++17", "-mavx2", "-ffast-math"],  # 启用 FMA 支持  AVX2 指令集
+    extra_compile_args=compile_args,
+    language="c++"
 )
 
 setup(
