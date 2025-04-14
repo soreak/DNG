@@ -3,7 +3,7 @@
 
 template <typename T>
 void test() {
-    using Type = decltype(std::declval<T>());  // ✅ 正确
+    using Type = decltype(std::declval<T>());
     std::cout << "Type is valid.\n";
 }
 

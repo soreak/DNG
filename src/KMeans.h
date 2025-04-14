@@ -8,23 +8,24 @@
 #include "Node.h"
 
 class Kmeans {
-public:
-    Kmeans(const std::vector<Node>& data_set, int K = 3, int iteration = 100)
-        : data_set(data_set), K(K), iteration(iteration) {
-        this->num = data_set.size();
-    }
-
-    int num; // 样本总数
-    int K; // 聚类个数
-    int iteration; // 最大迭代次数
-    std::vector<Node> centers; // k个中心点
-    std::vector<Node> data_set; // 数据集
-
-    Node QueryCenter(const std::vector<Node>& cluster) const;  // 计算聚类中心点
-    Node QueryRealCenter(const std::vector<Node>& cluster) const;  // 计算真实聚类中心点
-    void Initial();   // 初始化聚类中心
-    std::vector<Node> Process();  // kmeans 主流程
-};
+    public:
+        Kmeans(std::vector<Node>* data_set, int K = 3, int iteration = 100)
+            : data_set(data_set), K(K), iteration(iteration) {
+            this->num = data_set->size();
+        }
+    
+        int num;
+        int K;
+        int iteration;
+        std::vector<Node> centers;
+        std::vector<Node>* data_set; 
+    
+        Node QueryCenter(const std::vector<Node>& cluster) const;
+        Node QueryRealCenter(const std::vector<Node>& cluster) const;
+        void Initial();
+        std::vector<Node> Process();
+    };
+    
 
 // 计算聚类中心点（非真实数据点）
 Node Kmeans::QueryCenter(const std::vector<Node>& cluster) const {
@@ -66,7 +67,7 @@ void Kmeans::Initial() {
         int idx = rand() % this->num;
         if (selected_indices.count(idx)) continue;
         selected_indices.insert(idx);
-        Node center = data_set[idx];
+        Node center = (*data_set)[idx];
         center.setCentroid(center_id++);  // 为每个中心分配从 0 开始的 ID
         centers.push_back(center);
     }
@@ -81,7 +82,7 @@ std::vector<Node> Kmeans::Process() {
         printf("\n============= iteration: %d ===============\n", iteration);
 
         // Step 2: 每次计算所有点到各个中心的距离，选择一个最小的距离的中心点作为这个样本的类别
-        for (auto& node : data_set) {
+        for (auto& node : *data_set) {
             float min_distance = std::numeric_limits<float>::max();
             for (auto& center : centers) {
                 float distance = node.computeDistance(center);
@@ -95,7 +96,7 @@ std::vector<Node> Kmeans::Process() {
         // Step 3: 重新计算各个聚类中心
         for (auto& center : centers) {
             std::vector<Node> cluster;
-            for (const auto& node : data_set) {
+            for (const auto& node : *data_set) {
                 if (node.centroid_id == center.centroid_id) {
                     cluster.push_back(node);
                 }

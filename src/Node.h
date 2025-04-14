@@ -53,7 +53,7 @@ public:
 
     void print() const override {
         std::cout << "Node ID: " << id << "\n";
-        //std::cout << "Centroid ID: " << centroid_id << "\n";
+        std::cout << "Centroid ID: " << centroid_id << "\n";
         std::cout << "Features: ";
         for (const auto& feature : features) {
             std::cout << feature << " ";

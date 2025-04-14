@@ -7,7 +7,7 @@
 using namespace std::chrono;  // 方便使用时间函数
 
 #ifndef C
-    #define C 20  // 聚类数量
+    #define C 40  // 聚类数量
 #endif
 
 #ifndef N
@@ -35,11 +35,15 @@ using namespace std::chrono;  // 方便使用时间函数
 #endif
 
 #ifndef Angle_Threshold   
-    #define Angle_Threshold 0.95  // 决定连接方式的候选节点数量
+    #define Angle_Threshold 0.95  // 裁边角度
 #endif
 
 #ifndef     Top_K   
-    #define Top_K 5  // 决定连接方式的候选节点数量
+    #define Top_K 5  // 返回的最近邻数量
+#endif
+
+#ifndef     K_iterations   
+    #define K_iterations 5  // kmeans迭代的次数
 #endif
 
 //=============================================================
@@ -150,9 +154,6 @@ int main(){
     auto start = high_resolution_clock::now();  // 记录开始时间
 
     // 初始化聚类中心数组
-    std::vector<Node> centroids;
-    std::cout << "初始化聚类 ";
-    kmeans(nodes, centroids, DIM);
     std::cout << "KMeans++聚类 ";
 
     // std::cout << "\nCentroids initialized using K-means:\n";
@@ -177,10 +178,9 @@ int main(){
     std::cout << "KMeans++ 聚类时间: " 
               << duration_cast<milliseconds>(kmeans_end - start).count() 
               << " ms\n";
+    Kmeans kmeans(&nodes, C, K_iterations);
 
-    // 为节点分配聚类
-    std::vector<Node> clusters[C];
-    assign_to_clusters(nodes, centroids, DIM, clusters);
+    std::vector<Node> centroids = kmeans.Process();
 
     // 计时：分配聚类完成
     auto assign_end = high_resolution_clock::now();
@@ -193,7 +193,7 @@ int main(){
     KNNGraph::printKNNGraph(centroids);
 
     KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor,Max_Reverse_Edges);
-
+    //KNNGraph::printKNNGraph(nodes);
      // 计时：KNN 构建完成
      auto knn_end = high_resolution_clock::now();
      std::cout << "KNN 构建时间: " 

@@ -40,7 +40,7 @@ std::vector<Node> findTopKNearest(
     visited.insert(n_centroid_point);
 
     std::cout << "[DEBUG] 以节点 " << n_centroid_point << " 为入口进行搜索...\n";
-
+  
     // **将入口点的邻居加入 result**
     for (int neighbor_id : nodes[n_centroid_point].neighbors) {
         if (visited.count(neighbor_id)) continue; // 跳过已访问的节点
