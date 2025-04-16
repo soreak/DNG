@@ -3,13 +3,13 @@ import os
 import pybind11
 import platform
 
-module_name = "dng_graph"
+module_name = "dng"
 source_files = ["src/dng.cpp"]
 include_dirs = ["src", pybind11.get_include()]
 
 compile_args = ["-std=c++17", "-mavx2", "-ffast-math"]
 
-dng_graph_module = Extension(
+dng_module = Extension(
     module_name,
     sources=source_files,
     include_dirs=include_dirs,
@@ -18,10 +18,10 @@ dng_graph_module = Extension(
 )
 
 setup(
-    name="dng_graph",
+    name="dng",
     version="1.0.0",
     description="A C++ library for graph-based nearest neighbor search",
-    ext_modules=[dng_graph_module],
+    ext_modules=[dng_module],
     classifiers=[
         "Programming Language :: C++",
         "License :: OSI Approved :: MIT License",
