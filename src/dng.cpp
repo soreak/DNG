@@ -43,6 +43,7 @@ std::vector<Node> load_data_from_file(const std::string& filename, size_t& d_out
     float* xt = fvecs_read(filename.c_str(), &d_out, &n_out);
     std::vector<Node> nodes;
     insertToNodes(xt, d_out, n_out, nodes);
+    delete[] xt;  // 释放内存
     return nodes;
 }
 
@@ -76,7 +77,7 @@ std::vector<Node> init_index(pybind11::object input,int centroid_num,int K_neigh
       KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
       RNNDescent(nodes, K_neighbor, iterations);
       KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
-      return nodes;
+      return std::move(nodes);
 }
  Node convert_to_node(const float* v, int dim, int node_id = -1) {
       Node node(dim, node_id);  
@@ -140,6 +141,7 @@ std::vector<Node> query(std::vector<Node> nodes, pybind11::object input, int top
       pybind11::array_t <float, pybind11::array::c_style | pybind11::array::forcecast > items(input);
       auto buffer = items.request();
       std::vector<Node> result;
+      result.reserve(top_k);
       std::vector<Node> query_points = convert_input_to_nodes(input);
       for(Node node : query_points){
             node.setId(-1);  // 设置为 -1，表示查询点

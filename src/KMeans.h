@@ -17,6 +17,7 @@ class Kmeans {
         int num;
         int K;
         int iteration;
+        mutable std::vector<float> avg_features;
         std::vector<Node> centers;
         std::vector<Node>* data_set; 
     
@@ -29,7 +30,7 @@ class Kmeans {
 
 // 计算聚类中心点（非真实数据点）
 Node Kmeans::QueryCenter(const std::vector<Node>& cluster) const {
-    std::vector<float> avg_features(cluster[0].features.size(), 0.0f);
+    avg_features.assign(cluster[0].features.size(), 0.0f);
     for (const auto& node : cluster) {
         for (size_t i = 0; i < node.features.size(); ++i) {
             avg_features[i] += node.features[i];

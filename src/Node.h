@@ -16,7 +16,10 @@ public:
     int centroid_id;
     int reverse_edge_add;
 
-    Node(int dim, int node_id) : features(dim, 0.0f), id(node_id) {}
+    Node(int dim, int node_id) : features(dim, 0.0f), id(node_id) {
+        neighbors.reserve(10);  // 假设初始邻居数量为 10
+        distances.reserve(10);
+    }
 
     const std::vector<float>& getFeatures() const override {
         return features;
