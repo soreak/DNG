@@ -154,7 +154,7 @@ std::vector<Node> query(std::vector<Node> nodes, pybind11::object input, int top
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(dng_graph, m) {
+PYBIND11_MODULE(dng, m) {
       m.doc() = "A C++ library for graph-based nearest neighbor search";
   
       // 绑定 Node 类
