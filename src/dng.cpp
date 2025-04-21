@@ -223,11 +223,6 @@ PYBIND11_MODULE(dng, m) {
           .def("computeDistance", &Node::computeDistance)
           .def("addNeighbor", &Node::addNeighbor)
           .def("print", &Node::print);
-
-      py::class_<DNGIndex>(m, "DNGIndex")
-        .def(py::init<py::array_t<float>,int,int,int,int,int,float>())
-        .def("search", &DNGIndex::search);
-
   
       // 绑定 KNNGraph 类的静态方法
       m.def("buildKNNGraph", &KNNGraph::buildKNNGraph, "Build KNN Graph",
@@ -261,6 +256,10 @@ PYBIND11_MODULE(dng, m) {
       m.def("convert_to_node", &convert_to_node, "Convert float* to Node",
             py::arg("v"), py::arg("dim"), py::arg("node_id") = -1);
 
+      py::class_<DNGIndex>(m, "DNGIndex")
+        .def(py::init<py::array_t<float>,int,int,int,int,int,float>())
+        .def("search", &DNGIndex::search);
+        
       // 绑定 query 方法
       m.def("query", &query, "Query the nearest neighbors",
             py::arg("nodes"), 
