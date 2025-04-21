@@ -52,7 +52,7 @@ class DNGIndex {
         std::vector<Node> nodes;
         std::vector<Node> centroids;
     
-        DNGIndex(py::array_t<float> input, int centroid_num, int K_neighbor, int iterations,
+        DNGIndex(pybind11::array_t<float> input, int centroid_num, int K_neighbor, int iterations,
                  int Max_Reverse_Edges, int Limit_Candidates, float Angle_Threshold) {
                 pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
                 auto buffer = items.request();
@@ -85,7 +85,7 @@ class DNGIndex {
                 KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
         }
     
-        std::vector<Node> search(py::array_t<float> input, int top_k, int max_visit) {
+        std::vector<Node> search(pybind11::array_t<float> input, int top_k, int max_visit) {
             pybind11::array_t <float, pybind11::array::c_style | pybind11::array::forcecast > items(input);
             auto buffer = items.request();
             std::vector<Node> result;
@@ -224,7 +224,7 @@ PYBIND11_MODULE(dng, m) {
           .def("addNeighbor", &Node::addNeighbor)
           .def("print", &Node::print);
 
-    py::class_<DNGIndex>(m, "DNGIndex")
+      py::class_<DNGIndex>(m, "DNGIndex")
         .def(py::init<py::array_t<float>,int,int,int,int,int,float>())
         .def("search", &DNGIndex::search);
 
