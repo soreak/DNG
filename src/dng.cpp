@@ -47,6 +47,61 @@ std::vector<Node> load_data_from_file(const std::string& filename, size_t& d_out
     return nodes;
 }
 
+class DNGIndex {
+    public:
+        std::vector<Node> nodes;
+        std::vector<Node> centroids;
+    
+        DNGIndex(py::array_t<float> input, int centroid_num, int K_neighbor, int iterations,
+                 int Max_Reverse_Edges, int Limit_Candidates, float Angle_Threshold) {
+                pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
+                auto buffer = items.request();
+            
+                if (buffer.ndim != 2) {
+                        throw std::runtime_error("Input array must be 2D (shape: [N, D])");
+                }
+            
+                size_t rows = buffer.shape[0];
+                size_t dim = buffer.shape[1];
+            
+                float* data_ptr = static_cast<float*>(buffer.ptr);
+                std::vector<Node> nodes;
+                nodes.reserve(rows);
+            
+                for (size_t i = 0; i < rows; ++i) {
+                        std::vector<float> features(dim);
+                        for (size_t j = 0; j < dim; ++j) {
+                            features[j] = data_ptr[i * dim + j];
+                        }
+                        Node node(static_cast<int>(i), dim);
+                        node.setFeatures(features);
+                        nodes.push_back(std::move(node));
+                }
+            
+                std::vector<Node> centroids = Kmeans(&nodes, centroid_num, 10).Process();
+                KNNGraph::buildKNNGraph(nodes, centroids, K_neighbor);
+                KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
+                RNNDescent(nodes, K_neighbor, iterations);
+                KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
+        }
+    
+        std::vector<Node> search(py::array_t<float> input, int top_k, int max_visit) {
+            pybind11::array_t <float, pybind11::array::c_style | pybind11::array::forcecast > items(input);
+            auto buffer = items.request();
+            std::vector<Node> result;
+            result.reserve(top_k);
+            std::vector<Node> query_points = convert_input_to_nodes(input);
+            for(Node node : query_points){
+                  node.setId(-1);  // 设置为 -1，表示查询点
+                  int n_centroid_point = findNearestCentroid(nodes, node);
+                  result = findTopKNearest(nodes, node, n_centroid_point, top_k, max_visit);
+            }
+            
+            return result;
+        }
+    };
+    
+
 std::vector<Node> init_index(pybind11::object input,int centroid_num,int K_neighbor,int iterations, int Max_Reverse_Edges,int Limit_Candidates, float Angle_Threshold) {
       pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
       auto buffer = items.request();
@@ -168,6 +223,11 @@ PYBIND11_MODULE(dng, m) {
           .def("computeDistance", &Node::computeDistance)
           .def("addNeighbor", &Node::addNeighbor)
           .def("print", &Node::print);
+
+    py::class_<DNGIndex>(m, "DNGIndex")
+        .def(py::init<py::array_t<float>,int,int,int,int,int,float>())
+        .def("search", &DNGIndex::search);
+
   
       // 绑定 KNNGraph 类的静态方法
       m.def("buildKNNGraph", &KNNGraph::buildKNNGraph, "Build KNN Graph",
