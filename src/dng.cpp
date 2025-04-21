@@ -256,10 +256,13 @@ PYBIND11_MODULE(dng, m) {
       m.def("convert_to_node", &convert_to_node, "Convert float* to Node",
             py::arg("v"), py::arg("dim"), py::arg("node_id") = -1);
 
+      m.def("convert_input_to_nodes", &convert_input_to_nodes, "Convert input to Node",
+            py::arg("input"));      
+
       py::class_<DNGIndex>(m, "DNGIndex")
         .def(py::init<py::array_t<float>,int,int,int,int,int,float>())
         .def("search", &DNGIndex::search);
-        
+
       // 绑定 query 方法
       m.def("query", &query, "Query the nearest neighbors",
             py::arg("nodes"), 
