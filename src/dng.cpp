@@ -9,6 +9,7 @@
 #include "Search.h"
 #include "Enter.h"
 #include "Read.h"
+inline void get_input_array_shapes(const pybind11::buffer_info& buffer, size_t* rows, size_t* features);
 
 
 std::vector<Node> init_random_data(int N, int DIM) {
