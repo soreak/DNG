@@ -7,8 +7,8 @@ module_name = "dng"
 source_files = ["src/dng.cpp"]
 include_dirs = ["src", pybind11.get_include()]
 
-compile_args = ["/std:c++17", "/arch:AVX2", "/fp:fast"]
-# compile_args = ["-std=c++17", "-mavx2", "-ffast-math"]
+#compile_args = ["/std:c++17", "/arch:AVX2", "/fp:fast"]
+compile_args = ["-std=c++17", "-mavx2", "-ffast-math"]
 
 dng_module = Extension(
     module_name,
