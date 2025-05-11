@@ -54,35 +54,97 @@ class DNGIndex {
         std::vector<Node> centroids;
     
         DNGIndex(pybind11::array_t<float> input, int centroid_num, int K_neighbor, int iterations,
-                 int Max_Reverse_Edges, int Limit_Candidates, float Angle_Threshold) {
+         int Max_Reverse_Edges, int Limit_Candidates, float Angle_Threshold) 
+        {
+            try {
+                // 1. 检查输入数据有效性
+                if (!input) {
+                    throw std::runtime_error("Input array is null");
+                }
+
                 pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
                 auto buffer = items.request();
-            
+
                 if (buffer.ndim != 2) {
-                        throw std::runtime_error("Input array must be 2D (shape: [N, D])");
+                    throw std::runtime_error("Input array must be 2D (shape: [N, D])");
                 }
-            
+
                 size_t rows = buffer.shape[0];
                 size_t dim = buffer.shape[1];
-            
+
+                // 2. 检查参数有效性
+                if (centroid_num <= 0 || K_neighbor <= 0 || iterations <= 0) {
+                    throw std::runtime_error("Parameters must be positive (centroid_num=" + 
+                                        std::to_string(centroid_num) + 
+                                        ", K_neighbor=" + std::to_string(K_neighbor) + 
+                                        ", iterations=" + std::to_string(iterations) + ")");
+                }
+
                 float* data_ptr = static_cast<float*>(buffer.ptr);
+                if (!data_ptr) {
+                    throw std::runtime_error("Failed to get data pointer from input array");
+                }
+
+                // 3. 节点创建阶段
+                std::cout << "[DEBUG] Starting node creation (" << rows << " nodes)" << std::endl;
                 this->nodes.reserve(rows);
-            
+
                 for (size_t i = 0; i < rows; ++i) {
+                    try {
                         std::vector<float> features(dim);
                         for (size_t j = 0; j < dim; ++j) {
                             features[j] = data_ptr[i * dim + j];
                         }
+                        
                         Node node(static_cast<int>(i), dim);
                         node.setFeatures(features);
                         this->nodes.push_back(node);
+
+                        // 每10%进度输出日志
+                        if (rows > 10 && i % (rows/10) == 0) {
+                            std::cout << "[PROGRESS] Created " << i << "/" << rows 
+                                    << " nodes (" << (i*100/rows) << "%)" << std::endl;
+                        }
+                    } catch (const std::exception& e) {
+                        throw std::runtime_error("Failed to create node " + std::to_string(i) + 
+                                            ": " + e.what());
+                    }
                 }
-            
-                this->centroids = Kmeans(&nodes, centroid_num, 10).Process();
-                KNNGraph::buildKNNGraph(nodes, centroids, K_neighbor);
-                KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
-                //RNNDescent(nodes, K_neighbor, iterations);
-                //KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
+
+                // 4. K-means聚类阶段
+                std::cout << "[DEBUG] Starting K-means clustering (" << centroid_num << " centroids)" << std::endl;
+                try {
+                    this->centroids = Kmeans(&nodes, centroid_num, 10).Process();
+                    if (centroids.empty()) {
+                        throw std::runtime_error("Kmeans returned empty centroids");
+                    }
+                } catch (const std::exception& e) {
+                    throw std::runtime_error("Kmeans failed: " + std::string(e.what()));
+                }
+
+                // 5. 构建KNN图阶段
+                std::cout << "[DEBUG] Building KNN graph (K=" << K_neighbor << ")" << std::endl;
+                try {
+                    KNNGraph::buildKNNGraph(nodes, centroids, K_neighbor);
+                } catch (const std::exception& e) {
+                    throw std::runtime_error("buildKNNGraph failed: " + std::string(e.what()));
+                }
+
+                // 6. 插入反向边阶段
+                std::cout << "[DEBUG] Inserting reverse edges (Max=" << Max_Reverse_Edges << ")" << std::endl;
+                try {
+                    KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
+                } catch (const std::exception& e) {
+                    throw std::runtime_error("insertKNNGraph failed: " + std::string(e.what()));
+                }
+
+                std::cout << "[DEBUG] DNG index built successfully" << std::endl;
+            } 
+            catch (const std::exception& e) {
+                // 捕获所有异常并添加上下文信息
+                std::cerr << "[ERROR] DNGIndex construction failed: " << e.what() << std::endl;
+                throw;  // 重新抛出异常
+            }
         }
     
         std::vector<std::pair<int, float>> search(pybind11::array_t<float> input, int top_k, int max_visit) {
