@@ -82,7 +82,7 @@ class DNGIndex {
                 KNNGraph::buildKNNGraph(nodes, centroids, K_neighbor);
                 KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
                 RNNDescent(nodes, K_neighbor, iterations);
-                KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
+                //KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
         }
     
         std::vector<std::pair<int, float>> search(pybind11::array_t<float> input, int top_k, int max_visit) {
