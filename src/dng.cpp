@@ -84,6 +84,28 @@ class DNGIndex {
                 //RNNDescent(nodes, K_neighbor, iterations);
                 //KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
         }
+    
+        std::vector<std::pair<int, float>> search(pybind11::array_t<float> input, int top_k, int max_visit) {
+            pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
+            auto buffer = items.request();
+            std::vector<std::pair<int, float>> result;
+            result.reserve(top_k); // 预留空间，优化性能
+        
+            // 将输入转换为 Node 对象
+            std::vector<Node> query_points = convert_input_to_nodes(input);
+            for (Node node : query_points) {
+                node.setId(-1);  // 设置为 -1，表示查询点
+        
+                // 查找最近的中心点
+                int n_centroid_point = findNearestCentroid(nodes, node);
+        
+                // 将每个查询点的结果加入到 result 中
+                std::vector<std::pair<int, float>> top_k_result = findTopKNearest(nodes, node, n_centroid_point, top_k, max_visit);
+                result.insert(result.end(), top_k_result.begin(), top_k_result.end()); // 使用 insert 来拼接两个 vector
+            }
+        
+            return result;
+        }
 
         std::vector<Node> convert_input_to_nodes(pybind11::object input) {
             pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
