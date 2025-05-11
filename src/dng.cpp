@@ -81,7 +81,7 @@ class DNGIndex {
                 this->centroids = Kmeans(&nodes, centroid_num, 10).Process();
                 KNNGraph::buildKNNGraph(nodes, centroids, K_neighbor);
                 KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
-                RNNDescent(nodes, K_neighbor, iterations);
+                //RNNDescent(nodes, K_neighbor, iterations);
                 //KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
         }
     
