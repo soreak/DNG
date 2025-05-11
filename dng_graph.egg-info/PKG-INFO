@@ -1,7 +1,0 @@
-Metadata-Version: 2.1
-Name: dng-graph
-Version: 1.0.0
-Summary: A C++ library for graph-based nearest neighbor search
-Classifier: Programming Language :: C++
-Classifier: License :: OSI Approved :: MIT License
-Classifier: Operating System :: OS Independent

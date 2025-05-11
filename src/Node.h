@@ -33,7 +33,7 @@ public:
     }
 
     void setFeatures(const std::vector<float>& new_features) override {
-        features = new_features;
+        features = std::move(new_features);
     }
 
     void setCentroid(int centroid) override {

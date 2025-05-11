@@ -75,36 +75,14 @@ class DNGIndex {
                         }
                         Node node(static_cast<int>(i), dim);
                         node.setFeatures(features);
-                        this->nodes.push_back(std::move(node));
+                        this->nodes.push_back(node);
                 }
             
                 this->centroids = Kmeans(&nodes, centroid_num, 10).Process();
                 KNNGraph::buildKNNGraph(nodes, centroids, K_neighbor);
                 KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
-                RNNDescent(nodes, K_neighbor, iterations);
-                KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
-        }
-    
-        std::vector<std::pair<int, float>> search(pybind11::array_t<float> input, int top_k, int max_visit) {
-            pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
-            auto buffer = items.request();
-            std::vector<std::pair<int, float>> result;
-            result.reserve(top_k); // 预留空间，优化性能
-        
-            // 将输入转换为 Node 对象
-            std::vector<Node> query_points = convert_input_to_nodes(input);
-            for (Node node : query_points) {
-                node.setId(-1);  // 设置为 -1，表示查询点
-        
-                // 查找最近的中心点
-                int n_centroid_point = findNearestCentroid(nodes, node);
-        
-                // 将每个查询点的结果加入到 result 中
-                std::vector<std::pair<int, float>> top_k_result = findTopKNearest(nodes, node, n_centroid_point, top_k, max_visit);
-                result.insert(result.end(), top_k_result.begin(), top_k_result.end()); // 使用 insert 来拼接两个 vector
-            }
-        
-            return result;
+                //RNNDescent(nodes, K_neighbor, iterations);
+                //KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
         }
 
         std::vector<Node> convert_input_to_nodes(pybind11::object input) {
@@ -141,6 +119,28 @@ class DNGIndex {
         
             return nodes;
         } 
+
+        std::vector<std::pair<int, float>> search(pybind11::array_t<float> input, int top_k, int max_visit) {
+            pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
+            auto buffer = items.request();
+            std::vector<std::pair<int, float>> result;
+            result.reserve(top_k); // 预留空间，优化性能
+        
+            // 将输入转换为 Node 对象
+            std::vector<Node> query_points = convert_input_to_nodes(input);
+            for (Node node : query_points) {
+                node.setId(-1);  // 设置为 -1，表示查询点
+        
+                // 查找最近的中心点
+                int n_centroid_point = findNearestCentroid(nodes, node);
+        
+                // 将每个查询点的结果加入到 result 中
+                std::vector<std::pair<int, float>> top_k_result = findTopKNearest(nodes, node, n_centroid_point, top_k, max_visit);
+                result.insert(result.end(), top_k_result.begin(), top_k_result.end()); // 使用 insert 来拼接两个 vector
+            }
+        
+            return result;
+        }
     };
     
 
@@ -179,6 +179,7 @@ PYBIND11_MODULE(dng, m) {
       // 绑定 Node 类
       py::class_<Node>(m, "Node")
           .def(py::init<int, int>())
+          .def(py::init<const Node&>()) 
           .def("getId", &Node::getId)
           .def("getFeatures", &Node::getFeatures)
           .def("setFeatures", &Node::setFeatures)
@@ -221,4 +222,7 @@ PYBIND11_MODULE(dng, m) {
       m.def("findTopKNearest", &findTopKNearest, "Find top K nearest nodes",
             py::arg("nodes"), py::arg("query_point"), py::arg("n_centroid_point"),
             py::arg("top_k"), py::arg("max_visit") = 1000);
+
+      m.def("init_random_data", &init_random_data, "初始化随机节点");
+
   }
