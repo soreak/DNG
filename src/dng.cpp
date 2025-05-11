@@ -131,11 +131,27 @@ class DNGIndex {
                 }
 
                 // 6. 插入反向边阶段
-                std::cout << "[DEBUG] Inserting reverse edges (Max=" << Max_Reverse_Edges << ")" << std::endl;
+                std::cout << "[DEBUG] insert KNN Graph (Max=" << Max_Reverse_Edges << ")" << std::endl;
                 try {
                     KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
                 } catch (const std::exception& e) {
                     throw std::runtime_error("insertKNNGraph failed: " + std::string(e.what()));
+                }
+
+                 // 6. RNNdesent阶段
+                std::cout << "[DEBUG] RNNdesent (Max=" << Max_Reverse_Edges << ")" << std::endl;
+                try {
+                    RNNDescent(nodes, K_neighbor, iterations);
+                } catch (const std::exception& e) {
+                    throw std::runtime_error("RNNdesent failed: " + std::string(e.what()));
+                }
+ 
+                 // 6. 插入反向边阶段
+                std::cout << "[DEBUG] Inserting reverse edges (Max=" << Max_Reverse_Edges << ")" << std::endl;
+                try {
+                    KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
+                } catch (const std::exception& e) {
+                    throw std::runtime_error("reverseRouting failed: " + std::string(e.what()));
                 }
 
                 std::cout << "[DEBUG] DNG index built successfully" << std::endl;
