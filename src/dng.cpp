@@ -130,7 +130,7 @@ class DNGIndex {
                     throw std::runtime_error("buildKNNGraph failed: " + std::string(e.what()));
                 }
 
-                // 6. 插入反向边阶段
+                // 6. 插入阶段
                 std::cout << "[DEBUG] insert KNN Graph (Max=" << Max_Reverse_Edges << ")" << std::endl;
                 try {
                     KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
@@ -210,7 +210,7 @@ class DNGIndex {
                 node.setId(-1);  // 设置为 -1，表示查询点
         
                 // 查找最近的中心点
-                int n_centroid_point = findNearestCentroid(nodes, node);
+                int n_centroid_point = findNearestCentroid(centroids, node);
         
                 // 将每个查询点的结果加入到 result 中
                 std::vector<std::pair<int, float>> top_k_result = findTopKNearest(nodes, node, n_centroid_point, top_k, max_visit);
