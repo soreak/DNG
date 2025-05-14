@@ -225,7 +225,7 @@ class DNGIndex {
             
             // 提取ID部分
             for (const auto& pair : top_k_pairs) {
-                result_ids.push_back(pair.first);
+                result_ids.push_back(pair);
             }
             
             return result_ids;
