@@ -7,7 +7,7 @@
 
 #include "Node.h"
 
-std::vector<std::pair<int, float>> findTopKNearest(
+std::vector<int> findTopKNearest(
     const std::vector<Node>& nodes,
     const Node& query_point,
     int n_centroid_point,
@@ -99,11 +99,12 @@ std::vector<std::pair<int, float>> findTopKNearest(
     }
 
     // **收集 top_k 结果，以 (id, distance) 形式返回**
-    std::vector<std::pair<int, float>> result;
+    //5.14 只返回id
+    std::vector<int> result;
     while (!result_heap.empty()) {
         int node_id = result_heap.top().second;
         float dist = result_heap.top().first;
-        result.push_back({node_id, dist});
+        result.push_back(node_id);
         result_heap.pop();
     }
 

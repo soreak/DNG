@@ -198,26 +198,37 @@ class DNGIndex {
             return nodes;
         } 
 
-        std::vector<std::pair<int, float>> search(pybind11::array_t<float> input, int top_k, int max_visit) {
+        std::vector<int> search(pybind11::array_t<float> input, int top_k, int max_visit) {
             pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
             auto buffer = items.request();
-            std::vector<std::pair<int, float>> result;
-            result.reserve(top_k); // 预留空间，优化性能
-        
-            // 将输入转换为 Node 对象
-            std::vector<Node> query_points = convert_input_to_nodes(input);
-            for (Node node : query_points) {
-                node.setId(-1);  // 设置为 -1，表示查询点
-        
-                // 查找最近的中心点
-                int n_centroid_point = findNearestCentroid(centroids, node);
-        
-                // 将每个查询点的结果加入到 result 中
-                std::vector<std::pair<int, float>> top_k_result = findTopKNearest(nodes, node, n_centroid_point, top_k, max_visit);
-                result.insert(result.end(), top_k_result.begin(), top_k_result.end()); // 使用 insert 来拼接两个 vector
+            
+            // 输入验证
+            if (buffer.ndim != 2 || buffer.shape[0] != 1) {
+                throw std::runtime_error("Input must be a single query vector with shape [1, dim]");
             }
-        
-            return result;
+
+            size_t dim = buffer.shape[1];
+            float* data_ptr = static_cast<float*>(buffer.ptr);
+            
+            // 创建查询节点
+            Node query_node(-1, dim); // 使用-1作为查询节点ID
+            std::vector<float> features(dim);
+            for (size_t j = 0; j < dim; ++j) {
+                features[j] = data_ptr[j];
+            }
+            query_node.setFeatures(features);
+
+            // 执行搜索 (只返回节点ID)
+            std::vector<int> result_ids;
+            int nearest_centroid = findNearestCentroid(centroids, query_node);
+            auto top_k_pairs = findTopKNearest(nodes, query_node, nearest_centroid, top_k, max_visit);
+            
+            // 提取ID部分
+            for (const auto& pair : top_k_pairs) {
+                result_ids.push_back(pair.first);
+            }
+            
+            return result_ids;
         }
     };
     
