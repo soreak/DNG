@@ -139,7 +139,7 @@ class DNGIndex {
                 }
 
                  // 6. RNNdesent阶段
-                std::cout << "[DEBUG] RNNdesent (Max=" << Max_Reverse_Edges << ")" << std::endl;
+                std::cout << "[DEBUG] RNNdesent (iterations=" << iterations << ")" << std::endl;
                 try {
                     RNNDescent(nodes, K_neighbor, iterations);
                 } catch (const std::exception& e) {
@@ -147,7 +147,7 @@ class DNGIndex {
                 }
  
                  // 6. 插入反向边阶段
-                std::cout << "[DEBUG] Inserting reverse edges (Max=" << Max_Reverse_Edges << ")" << std::endl;
+                std::cout << "[DEBUG] Inserting reverse edges (Limit_Candidates=" << Limit_Candidates << ")" << std::endl;
                 try {
                     KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
                 } catch (const std::exception& e) {

@@ -64,10 +64,10 @@ std::vector<std::pair<int, float>> findTopKNearest(
         min_heap.pop();
 
         // **停止条件：候选集中离查询点最近的点比 result 中最远的点还要远**日志打太多了
-        // if (curr_dist > result_heap.top().first) {
-        //     std::cout << "[DEBUG] 早停：候选集中离查询点最近的点比 result 中最远的点还远，停止扩展。\n";
-        //     break;
-        // }
+        if (curr_dist > result_heap.top().first) {
+            std::cout << "[DEBUG] 早停：候选集中离查询点最近的点比 result 中最远的点还远，停止扩展。\n";
+            break;
+        }
 
         // **扩展当前节点的所有邻居**
         bool has_closer_neighbor = false;
@@ -92,10 +92,10 @@ std::vector<std::pair<int, float>> findTopKNearest(
         }
 
         // **如果当前点的所有邻居都比当前点更远，则终止搜索**日志打太多了
-        // if (!has_closer_neighbor) {
-        //     std::cout << "[DEBUG] 早停：当前点的所有邻居都比当前点更远，停止扩展。\n";
-        //     break;
-        // }
+        if (!has_closer_neighbor) {
+            std::cout << "[DEBUG] 早停：当前点的所有邻居都比当前点更远，停止扩展。\n";
+            break;
+        }
     }
 
     // **收集 top_k 结果，以 (id, distance) 形式返回**
