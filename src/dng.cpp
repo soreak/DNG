@@ -219,14 +219,8 @@ class DNGIndex {
             query_node.setFeatures(features);
 
             // 执行搜索 (只返回节点ID)
-            std::vector<int> result_ids;
             int nearest_centroid = findNearestCentroid(centroids, query_node);
-            auto top_k_pairs = findTopKNearest(nodes, query_node, nearest_centroid, top_k, max_visit);
-            
-            // 提取ID部分
-            for (const auto& pair : top_k_pairs) {
-                result_ids.push_back(pair);
-            }
+            std::vector<int> result_ids = findTopKNearest(nodes, query_node, nearest_centroid, top_k, max_visit);
             
             return result_ids;
         }
