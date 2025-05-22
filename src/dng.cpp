@@ -199,7 +199,7 @@ class DNGIndex {
         } 
 
         std::vector<int> search(pybind11::array_t<float> input, int top_k, int max_visit) {
-            py::array_t<float, py::array::c_style | py::array::forcecast> items(input);
+            pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
             auto buffer = items.request();
 
             float* data_ptr = nullptr;
