@@ -199,17 +199,22 @@ class DNGIndex {
         } 
 
         std::vector<int> search(pybind11::array_t<float> input, int top_k, int max_visit) {
-            pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
+            py::array_t<float, py::array::c_style | py::array::forcecast> items(input);
             auto buffer = items.request();
-            
-            // 输入验证
-            if (buffer.ndim != 2 || buffer.shape[0] != 1) {
-                throw std::runtime_error("Input must be a single query vector with shape [1, dim]");
+
+            float* data_ptr = nullptr;
+            size_t dim = 0;
+
+            if (buffer.ndim == 1) {
+                dim = buffer.shape[0];
+                data_ptr = static_cast<float*>(buffer.ptr);
+            } else if (buffer.ndim == 2 && buffer.shape[0] == 1) {
+                dim = buffer.shape[1];
+                data_ptr = static_cast<float*>(buffer.ptr);
+            } else {
+                throw std::runtime_error("Input must be 1D or shape [1, dim]");
             }
 
-            size_t dim = buffer.shape[1];
-            float* data_ptr = static_cast<float*>(buffer.ptr);
-            
             // 创建查询节点
             Node query_node(-1, dim); // 使用-1作为查询节点ID
             std::vector<float> features(dim);
