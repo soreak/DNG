@@ -217,6 +217,7 @@ class DNGIndex {
 
             // 创建查询节点
             Node query_node(-1, dim); // 使用-1作为查询节点ID
+             std::cout << "dim =" << dim << std::endl;
             std::vector<float> features(dim);
             for (size_t j = 0; j < dim; ++j) {
                 features[j] = data_ptr[j];
