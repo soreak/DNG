@@ -205,19 +205,18 @@ class DNGIndex {
             float* data_ptr = nullptr;
             size_t dim = 0;
 
-            if (buffer.ndim == 1) {
-                dim = buffer.shape[0];
-                data_ptr = static_cast<float*>(buffer.ptr);
-            } else if (buffer.ndim == 2 && buffer.shape[0] == 1) {
-                dim = buffer.shape[1];
-                data_ptr = static_cast<float*>(buffer.ptr);
-            } else {
-                throw std::runtime_error("Input must be 1D or shape [1, dim]");
+            // 只接受一维输入
+            if (buffer.ndim != 1) {
+                throw std::runtime_error("Input must be a 1D float array (shape: [dim])");
             }
+
+            size_t dim = buffer.shape[0];
+            std::cout << "dim =" << dim << std::endl;
+            float* data_ptr = static_cast<float*>(buffer.ptr);
 
             // 创建查询节点
             Node query_node(-1, dim); // 使用-1作为查询节点ID
-             std::cout << "dim =" << dim << std::endl;
+
             std::vector<float> features(dim);
             for (size_t j = 0; j < dim; ++j) {
                 features[j] = data_ptr[j];
