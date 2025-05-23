@@ -202,9 +202,6 @@ class DNGIndex {
             pybind11::array_t<float, pybind11::array::c_style | pybind11::array::forcecast> items(input);
             auto buffer = items.request();
 
-            float* data_ptr = nullptr;
-            size_t dim = 0;
-
             // 只接受一维输入
             if (buffer.ndim != 1) {
                 throw std::runtime_error("Input must be a 1D float array (shape: [dim])");
