@@ -210,19 +210,23 @@ class DNGIndex {
             size_t dim = buffer.shape[0];
             std::cout << "dim =" << dim << std::endl;
             float* data_ptr = static_cast<float*>(buffer.ptr);
-
+            std::cout << "data_ptr =======================================" <<  std::endl;
             // 创建查询节点
             Node query_node(-1, dim); // 使用-1作为查询节点ID
-
+            std::cout << "query_node =======================================" <<  std::endl;
             std::vector<float> features(dim);
+            std::cout << "features =======================================" <<  std::endl;
             for (size_t j = 0; j < dim; ++j) {
                 features[j] = data_ptr[j];
             }
+            std::cout << "for =======================================" <<  std::endl;
             query_node.setFeatures(features);
-
+            std::cout << "setFeatures =======================================" <<  std::endl;
             // 执行搜索 (只返回节点ID)
             int nearest_centroid = findNearestCentroid(centroids, query_node);
+            std::cout << "nearest_centroid =======================================" <<  std::endl;
             std::vector<int> result_ids = findTopKNearest(nodes, query_node, nearest_centroid, top_k, max_visit);
+            std::cout << "result_ids =======================================" <<  std::endl;
             
             return result_ids;
         }
