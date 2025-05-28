@@ -241,9 +241,10 @@ static void buildKNNGraph(std::vector<Node>& nodes, std::vector<Node>& centroids
     // 反向路由函数
     static void reverseRouting(std::vector<Node>& nodes, const std::vector<Node>& centroids, int limit_candidates, float angle_threshold) {
         // 1. 遍历所有查询节点
+        int error_point_count = 0;  // 错误点计数
         for (size_t i = 0; i < nodes.size(); ++i) {
             Node& query_node = nodes[i];
-    
+           
             // 记录已访问的节点
             std::unordered_map<int, bool> visited;
     
@@ -345,9 +346,11 @@ static void buildKNNGraph(std::vector<Node>& nodes, std::vector<Node>& centroids
                     nodes[neighbor_id].addNeighbor(query_node.getId(), dist);  // 反向单向连接
                 }
             } else {
+                error_point_count++;
                 std::cerr << "[WARNING] 没有找到足够的邻居进行连接!" << std::endl;
             }
         }
+        std::cerr << "error_point_count : "<< error_point_count << std::endl;
     }
     
     

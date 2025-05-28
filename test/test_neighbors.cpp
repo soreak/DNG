@@ -226,21 +226,13 @@ int main(){
     // 查询最近邻
     int n_point = findNearestCentroid(centroids,query_point);
     std::cout << "最近的聚类中心是: " << n_point << "\n";
-    std::vector<Node> top_k_neighbors = findTopKNearest(nodes, query_point, n_point, Top_K);
+    std::vector<int> top_k_neighbors = findTopKNearest(nodes, query_point, n_point, Top_K);
 
     // 输出结果
     std::cout << "\nTop " << Top_K << " nearest neighbors for query node " << query_point.getId() << ":\n";
     for (const auto& node : top_k_neighbors) {
-        std::cout << "Node ID: " << node.getId() << "\n";
+        std::cout << "Node: " << node << "\n";
         
-        const std::vector<float>& features = node.getFeatures();  // 假设 getFeatures() 返回特征值
-        std::cout << "Features: ";
-        
-        // 输出特征值
-        for (const auto& feature : features) {
-            std::cout << feature << ",";  // 输出每个特征
-        }
-        std::cout << "\n";
     }
     auto query_end = high_resolution_clock::now();
     std::cout << "查询时间: " 
