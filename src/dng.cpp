@@ -96,7 +96,7 @@ class DNGIndex {
                             features[j] = data_ptr[i * dim + j];
                         }
                         
-                        Node node(static_cast<int>(i), dim);
+                        Node node(dim, static_cast<int>(i));
                         node.setFeatures(features);
                         this->nodes.push_back(node);
 
