@@ -125,7 +125,7 @@ class DNGIndex {
                 // 5. 构建KNN图阶段
                 std::cout << "[DEBUG] Building KNN graph (K=" << K_neighbor << ")" << std::endl;
                 try {
-                    KNNGraph::buildKNNGraph(nodes, centroids, K_neighbor);
+                    KNNGraph::buildKNNGraph(nodes, this->centroids, K_neighbor);
                 } catch (const std::exception& e) {
                     throw std::runtime_error("buildKNNGraph failed: " + std::string(e.what()));
                 }
@@ -133,7 +133,7 @@ class DNGIndex {
                 // 6. 插入阶段
                 std::cout << "[DEBUG] insert KNN Graph (Max=" << Max_Reverse_Edges << ")" << std::endl;
                 try {
-                    KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
+                    KNNGraph::insertKNNGraph(nodes, this->centroids, K_neighbor, Max_Reverse_Edges);
                 } catch (const std::exception& e) {
                     throw std::runtime_error("insertKNNGraph failed: " + std::string(e.what()));
                 }
@@ -149,7 +149,7 @@ class DNGIndex {
                  // 6. 插入反向边阶段
                 std::cout << "[DEBUG] Inserting reverse edges (Limit_Candidates=" << Limit_Candidates << ")" << std::endl;
                 try {
-                    KNNGraph::reverseRouting(nodes, centroids, Limit_Candidates, Angle_Threshold);
+                    KNNGraph::reverseRouting(nodes, this->centroids, Limit_Candidates, Angle_Threshold);
                 } catch (const std::exception& e) {
                     throw std::runtime_error("reverseRouting failed: " + std::string(e.what()));
                 }
@@ -218,9 +218,26 @@ class DNGIndex {
             for (size_t j = 0; j < dim; ++j) {
                 features[j] = data_ptr[j];
             }
-
+            
             query_node.setFeatures(features);
 
+            std::cout << "\nCentroids :\n";
+            for (int i = 0; i < 1000; i++) {
+                std::cout << "Centroid " << i << ": ";
+                
+                const std::vector<float>& features = centroids[i].getFeatures();
+                int id = centroids[i].getId();
+
+                std::cout << "Node Id :" << id << " \n";
+                for (float feature : features) {
+                    std::cout << feature << " ";
+                }
+            
+                std::cout << "\n Centroid Id :" << centroids[i].centroid_id << "";
+                
+                std::cout << std::endl;
+            }
+            
             // 执行搜索 (只返回节点ID)
             int nearest_centroid = findNearestCentroid(centroids, query_node);
 
