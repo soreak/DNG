@@ -101,14 +101,21 @@ std::vector<int> findTopKNearest(
     // **收集 top_k 结果，以 (id, distance) 形式返回**
     //5.14 只返回id
     std::vector<int> result;
+    std::unordered_set<int> unique_ids; // 用于去重
+
     while (!result_heap.empty()) {
         int node_id = result_heap.top().second;
-        float dist = result_heap.top().first;
-        result.push_back(node_id);
+        if (unique_ids.insert(node_id).second) { // 如果成功插入（未重复）
+            result.push_back(node_id);
+        }
         result_heap.pop();
     }
 
     // **逆序**，因为最大堆里是从远到近存的
     std::reverse(result.begin(), result.end());
+    if (result.size() > top_k) {
+        result.resize(top_k); // 如果去重后数量超限，截断
+    }
+
     return result;
 }
