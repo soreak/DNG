@@ -221,22 +221,22 @@ class DNGIndex {
             
             query_node.setFeatures(features);
 
-            std::cout << "\nCentroids :\n";
-            for (int i = 0; i < 1000; i++) {
-                std::cout << "Centroid " << i << ": ";
+            // std::cout << "\nCentroids :\n";
+            // for (int i = 0; i < 1000; i++) {
+            //     std::cout << "Centroid " << i << ": ";
                 
-                const std::vector<float>& features = centroids[i].getFeatures();
-                int id = centroids[i].getId();
+            //     const std::vector<float>& features = centroids[i].getFeatures();
+            //     int id = centroids[i].getId();
 
-                std::cout << "Node Id :" << id << " \n";
-                for (float feature : features) {
-                    std::cout << feature << " ";
-                }
+            //     std::cout << "Node Id :" << id << " \n";
+            //     for (float feature : features) {
+            //         std::cout << feature << " ";
+            //     }
             
-                std::cout << "\n Centroid Id :" << centroids[i].centroid_id << "";
+            //     std::cout << "\n Centroid Id :" << centroids[i].centroid_id << "";
                 
-                std::cout << std::endl;
-            }
+            //     std::cout << std::endl;
+            // }
             
             // 执行搜索 (只返回节点ID)
             int nearest_centroid = findNearestCentroid(centroids, query_node);
