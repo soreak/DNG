@@ -82,14 +82,26 @@ static void buildKNNGraph(std::vector<Node>& nodes, std::vector<Node>& centroids
 
 
 
-    // 插入 KNN 图
+        // 插入 KNN 图
     static void insertKNNGraph(
         std::vector<Node>& nodes,
         const std::vector<Node>& centroids,
         int K,
         int max_reverse_edges  // 触发裁边的最大反向边次数
     ) {
+        const size_t total_nodes = nodes.size();
+        const int progress_interval = std::max(1, static_cast<int>(total_nodes / 10)); // 每10%输出一次进度
+        
         for (size_t i = 0; i < nodes.size(); i++) {
+            // 输出进度信息
+            if (i % progress_interval == 0 || i == total_nodes - 1) {
+                float progress = (static_cast<float>(i + 1) / total_nodes) * 100.0f;
+                std::cout << "\r[进度] " << std::fixed << std::setprecision(1) << progress 
+                        << "% (" << (i + 1) << "/" << total_nodes << ")";
+                std::cout.flush();
+                if (i == total_nodes - 1) std::cout << std::endl; // 完成后换行
+            }
+
             Node& query_node = nodes[i];
             
             // 记录已访问的点及其距离
@@ -131,7 +143,7 @@ static void buildKNNGraph(std::vector<Node>& nodes, std::vector<Node>& centroids
                     
                     // 计算查询点到当前邻居的距离
                     float dist = query_node.computeDistance(nodes[neighbor_id]);
-                  
+                
                     visited[neighbor_id] = dist;
                     candidate_neighbors.push_back({neighbor_id, dist});
                     if (dist < visited[current_node.getId()]) {                        

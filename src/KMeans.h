@@ -80,8 +80,8 @@ std::vector<Node> Kmeans::Process() {
     // Step 1: 随机初始化 k 个点作为聚类中心
     Initial();
     while (iteration--) {
-        //printf("\n============= iteration: %d ===============\n", iteration);
-
+  
+        std::cout << "============= iteration:" << iteration << " ===============" << std::endl;
         // Step 2: 每次计算所有点到各个中心的距离，选择一个最小的距离的中心点作为这个样本的类别
         for (auto& node : *data_set) {
             float min_distance = std::numeric_limits<float>::max();
@@ -108,12 +108,7 @@ std::vector<Node> Kmeans::Process() {
             }
         }
 
-        // 打印更新后的中心点
-        // for (const auto& center : centers) {
-        //     std::cout << "Updated centroid_id: " << center.centroid_id << std::endl;
-        //     std::cout << "Updated node_id: " << center.getId() << std::endl;
-            
-        // }
+
     }
     return centers;
 }
