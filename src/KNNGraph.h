@@ -93,7 +93,7 @@ static void buildKNNGraph(std::vector<Node>& nodes, std::vector<Node>& centroids
         const size_t total_nodes = nodes.size();
         const int progress_interval = std::max(1, static_cast<int>(total_nodes / 10)); // 每10%输出一次进度
         
-        for (size_t i = 0; i < nodes.size(); i++) {
+        for (size_t i = 0; i < total_nodes; i++) {
             // 输出进度信息
             if (i % progress_interval == 0 || i == total_nodes - 1) {
                 float progress = (static_cast<float>(i + 1) / total_nodes) * 100.0f;

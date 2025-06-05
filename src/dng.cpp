@@ -125,15 +125,15 @@ class DNGIndex {
                 // 5. 构建KNN图阶段
                 std::cout << "[DEBUG] Building KNN graph (K=" << K_neighbor << ")" << std::endl;
                 try {
-                    KNNGraph::buildKNNGraph(nodes, this->centroids, K_neighbor);
+                    KNNGraph::buildKNNGraph(nodes,centroids, K_neighbor);
                 } catch (const std::exception& e) {
                     throw std::runtime_error("buildKNNGraph failed: " + std::string(e.what()));
                 }
 
                 // 6. 插入阶段
-                std::cout << "[DEBUG] insert KNN Graph (Max=" << Max_Reverse_Edges << ")" << std::endl;
+                std::cout << "[DEBUG] insert KNN Graph (Max_Reverse_Edges=" << Max_Reverse_Edges << ")" << std::endl;
                 try {
-                    KNNGraph::insertKNNGraph(nodes, this->centroids, K_neighbor, Max_Reverse_Edges);
+                    KNNGraph::insertKNNGraph(nodes, centroids, K_neighbor, Max_Reverse_Edges);
                 } catch (const std::exception& e) {
                     throw std::runtime_error("insertKNNGraph failed: " + std::string(e.what()));
                 }
