@@ -91,6 +91,7 @@ static void buildKNNGraph(std::vector<Node>& nodes, std::vector<Node>& centroids
         int max_reverse_edges  // 触发裁边的最大反向边次数
     ) {
         const size_t total_nodes = nodes.size();
+        std::cout << "total_nodes  " << total_nodes << std::endl; 
         const int progress_interval = std::max(1, static_cast<int>(total_nodes / 10)); // 每10%输出一次进度
         
         for (size_t i = 0; i < total_nodes; i++) {
