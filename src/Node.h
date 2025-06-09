@@ -41,12 +41,12 @@ public:
     }
 
     // 使用L2Float类的compare方法计算距离
+    // 修改computeDistance实现
     float computeDistance(const INode& other) const override {
-        const Node& other_node = dynamic_cast<const Node&>(other);
-        const std::vector<float>& other_features = other_node.getFeatures();
-
-        // 调用L2Float的compare方法计算距离
-        return L2Float::compare(features.data(), other_features.data(), features.size());
+        const Node& other_node = static_cast<const Node&>(other);
+        return L2Float::compare(features.data(), 
+                            other_node.features.data(), 
+                            features.size());
     }
 
     void addNeighbor(int neighbor_id, float distance) override {

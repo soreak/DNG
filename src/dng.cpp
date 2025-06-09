@@ -146,7 +146,7 @@ class DNGIndex {
                     throw std::runtime_error("RNNdesent failed: " + std::string(e.what()));
                 }
  
-                 // 6. 插入反向边阶段
+                 // 6. 插入反向边阶段（参考一下NSG）
                 std::cout << "[DEBUG] Inserting reverse edges (Limit_Candidates=" << Limit_Candidates << ")" << std::endl;
                 try {
                     KNNGraph::reverseRouting(nodes, this->centroids, Limit_Candidates, Angle_Threshold);

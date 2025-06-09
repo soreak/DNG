@@ -7,19 +7,19 @@
 using namespace std::chrono;  // 方便使用时间函数
 
 #ifndef C
-    #define C 40  // 聚类数量
+    #define C 100  // 聚类数量
 #endif
 
 #ifndef N
-    #define N 2000   // 数据点数量
+    #define N 100000   // 数据点数量
 #endif
 
 #ifndef DIM
-    #define DIM 4  // 数据点维度，
+    #define DIM 30  // 数据点维度，
 #endif
 
 #ifndef K_neighbor
-    #define K_neighbor 6  // 邻居数量
+    #define K_neighbor 20  // 邻居数量
 #endif
 
 #ifndef iterations
@@ -27,15 +27,15 @@ using namespace std::chrono;  // 方便使用时间函数
 #endif
 
 #ifndef Max_Reverse_Edges
-    #define Max_Reverse_Edges 5  // 触发裁边的最大反向边次数
+    #define Max_Reverse_Edges 20  // 触发裁边的最大反向边次数
 #endif
 
 #ifndef Limit_Candidates   
-    #define Limit_Candidates 2  // 决定连接方式的候选节点数量
+    #define Limit_Candidates 25  // 决定连接方式的候选节点数量
 #endif
 
 #ifndef Angle_Threshold   
-    #define Angle_Threshold 0.95  // 裁边角度
+    #define Angle_Threshold 0.8  // 裁边角度
 #endif
 
 #ifndef     Top_K   
@@ -144,9 +144,13 @@ int main(){
         nodes.push_back(node);
     }
     // 选择一个查询点
-    Node query_point(4, -1);  // 假设查询点是 nodes 中的第一个
+    Node query_point(50, -1);  // 假设查询点是 nodes 中的第一个
     query_point.setFeatures({
-        1, 2, 0, 0
+        1, 2, 0, 0, 1, 2, 0, 0, 1, 2, 
+        0, 0, 1, 2, 0, 0, 0, 0, 1, 2, 
+        1, 2, 0, 0, 1, 2, 0, 0, 1, 2, 
+        0, 0, 1, 2, 0, 0, 0, 0, 1, 2, 
+        1, 2, 0, 0, 1, 2, 0, 0, 1, 2
     });
 
 
