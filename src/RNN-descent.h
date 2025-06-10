@@ -18,102 +18,118 @@ struct Neighbor {
 
 
 void RNNDescent(std::vector<Node>& nodes, int K, int max_iterations) {
+    const size_t num_nodes = nodes.size();
     bool changed = false;
+    
+    // 1. 预分配内存避免重复分配
+    std::vector<std::vector<Neighbor>> tmp_neighbors(num_nodes);
+    #pragma omp parallel for
+    for (size_t i = 0; i < num_nodes; ++i) {
+        tmp_neighbors[i].reserve(K * 2);
+    }
 
-    for (int iteration = 0; iteration < max_iterations; iteration++) {
+    for (int iteration = 0; iteration < max_iterations; ++iteration) {
         changed = false;
         
-        // 并行化处理每个节点的邻居更新
-        //（需要更新）
-        //#pragma omp parallel for
-        for (size_t i = 0; i < nodes.size(); i++) {
+        // 2. 并行化处理节点
+        #pragma omp parallel for reduction(||:changed)
+        for (size_t i = 0; i < num_nodes; ++i) {
             Node& node = nodes[i];
+            auto& candidates = tmp_neighbors[i];
+            candidates.clear();
 
-            // 使用优先队列来存储K个最近邻
-            std::priority_queue<Neighbor, std::vector<Neighbor>, std::greater<Neighbor>> candidate_neighbors;
+            // 3. 使用更高效的距离缓存
+            std::unordered_map<int, float> dist_cache;
+            dist_cache.reserve(node.neighbors.size() * 2);
 
-            // 遍历节点的邻居
-            for (size_t j = 0; j < node.neighbors.size(); j++) {
-                int neighbor_id = node.neighbors[j];
-                float dist_to_neighbor = node.distances[j];
-
-                // 获取该邻居的邻居
+            // 4. 两阶段邻居收集
+            // 阶段一：收集当前邻居的邻居
+            for (size_t j = 0; j < node.neighbors.size(); ++j) {
+                const int neighbor_id = node.neighbors[j];
+                const float dist_to_neighbor = node.distances[j];
                 const Node& neighbor_node = nodes[neighbor_id];
-                for (size_t k = 0; k < neighbor_node.neighbors.size(); k++) {
-                    int neighbor_of_neighbor_id = neighbor_node.neighbors[k];
 
-                    // 排除当前节点（避免邻居的邻居是当前节点）
-                    if (neighbor_of_neighbor_id == node.id) {
-                        continue;
+                for (size_t k = 0; k < neighbor_node.neighbors.size(); ++k) {
+                    const int nn_id = neighbor_node.neighbors[k];
+                    if (nn_id == static_cast<int>(i)) continue;
+
+                    // 使用缓存避免重复计算
+                    float dist;
+                    if (auto it = dist_cache.find(nn_id); it != dist_cache.end()) {
+                        dist = it->second;
+                    } else {
+                        dist = node.computeDistance(nodes[nn_id]);
+                        dist_cache[nn_id] = dist;
                     }
 
-                    // 计算节点与邻居的邻居之间的距离
-                    float dist = node.computeDistance(nodes[neighbor_of_neighbor_id]);
-
-                    // 只有当节点与邻居的邻居的距离小于当前邻居的距离时，才考虑该邻居
                     if (dist < dist_to_neighbor) {
-                        candidate_neighbors.push({neighbor_of_neighbor_id, dist});
+                        candidates.push_back({nn_id, dist});
                     }
                 }
             }
 
-            // 临时存储更新后的邻居和距离
-            std::vector<int> updated_neighbors = node.neighbors;
-            std::vector<float> updated_distances = node.distances;
-
-            // 选择K个最近的邻居
-            while (candidate_neighbors.size() > K) {
-                candidate_neighbors.pop();
+            // 阶段二：与现有邻居合并
+            for (size_t j = 0; j < node.neighbors.size(); ++j) {
+                candidates.push_back({
+                    node.neighbors[j], 
+                    node.distances[j]
+                });
             }
 
-            // 记录是否有邻居被更新
+            // 5. 优化TopK选择（使用nth_element替代全排序）
+            if (candidates.size() > K) {
+                std::nth_element(
+                    candidates.begin(),
+                    candidates.begin() + K,
+                    candidates.end(),
+                    [](const Neighbor& a, const Neighbor& b) {
+                        return a.distance < b.distance;
+                    }
+                );
+                candidates.resize(K);
+            } else {
+                std::sort(
+                    candidates.begin(),
+                    candidates.end(),
+                    [](const Neighbor& a, const Neighbor& b) {
+                        return a.distance < b.distance;
+                    }
+                );
+            }
+
+            // 6. 差异检测优化
             bool local_changed = false;
-
-            // 更新邻居，保留原有邻居，只替换更近的邻居
-            while (!candidate_neighbors.empty()) {
-                const Neighbor& neighbor = candidate_neighbors.top();
-                int neighbor_id = neighbor.id;
-                float neighbor_dist = neighbor.distance;
-
-                // 只替换当前邻居中距离更远的邻居
-                auto it = std::find(updated_neighbors.begin(), updated_neighbors.end(), neighbor_id);
-                if (it == updated_neighbors.end()) {
-                    updated_neighbors.push_back(neighbor_id);
-                    updated_distances.push_back(neighbor_dist);
-                    local_changed = true; // 新邻居添加，表示更新发生了
-                }
-                else {
-                    // 找到邻居，更新其距离（只替换更远的邻居）
-                    size_t idx = std::distance(updated_neighbors.begin(), it);
-                    if (updated_distances[idx] > neighbor_dist) {
-                        updated_distances[idx] = neighbor_dist;
-                        local_changed = true; // 更新了邻居的距离
+            if (node.neighbors.size() != candidates.size()) {
+                local_changed = true;
+            } else {
+                for (size_t j = 0; j < candidates.size(); ++j) {
+                    if (node.neighbors[j] != candidates[j].id || 
+                        std::abs(node.distances[j] - candidates[j].distance) > 1e-6) {
+                        local_changed = true;
+                        break;
                     }
                 }
-                candidate_neighbors.pop();
             }
 
-            // 如果邻居有更新，标记为发生了变化
             if (local_changed) {
                 changed = true;
+                #pragma omp critical
+                {
+                    node.neighbors.resize(candidates.size());
+                    node.distances.resize(candidates.size());
+                    for (size_t j = 0; j < candidates.size(); ++j) {
+                        node.neighbors[j] = candidates[j].id;
+                        node.distances[j] = candidates[j].distance;
+                    }
+                }
             }
-
-            // 更新节点的邻居信息
-            node.neighbors = updated_neighbors;
-            node.distances = updated_distances;
         }
 
-        // 如果没有发生变化，则提前停止
         if (!changed) {
-            std::cout << "No change in neighbors, stopping early at iteration " << iteration + 1 << std::endl;
+            #pragma omp master
+            std::cout << "Converged at iteration " << iteration + 1 << std::endl;
             break;
         }
-
-        // 在每一轮结束时打印当前的邻居
-        // std::cout << "Iteration " << iteration + 1 << " completed." << std::endl;
-        // for (size_t i = 0; i < nodes.size(); i++) {
-        //     nodes[i].print();
-        // }
     }
 }
 

@@ -62,7 +62,7 @@ public:
         const size_t total_nodes = nodes.size();
         std::cout << "total_nodes: " << total_nodes << std::endl;
 
-        // 1. 预构建 centroid 的优先搜索结构（提升 3-5 倍）
+        // 1. 预构建 centroid 的优先搜索结构
         std::vector<std::vector<std::pair<int, float>>> centroid_neighbors(centroids.size());
         #pragma omp parallel for
         for (size_t i = 0; i < centroids.size(); ++i) {
@@ -78,13 +78,13 @@ public:
             }
         }
 
-        // 2. 并行处理节点（提升 2-4 倍）
+        // 2. 并行处理节点
         int last_reported_percent = -1;
         #pragma omp parallel for schedule(dynamic, 100)
         for (size_t i = 0; i < total_nodes; ++i) {
             Node& query_node = nodes[i];
 
-            // 3. 使用优先队列替代 BFS（提升 20-30%）
+            // 3. 使用优先队列替代 BFS
             std::priority_queue<std::pair<float, int>> pq;
             for (const Node& centroid : centroids) {
                 float dist = query_node.computeDistance(centroid);
@@ -94,7 +94,7 @@ public:
             std::unordered_map<int, float> visited;
             std::vector<std::pair<int, float>> candidate_neighbors;
 
-            // 4. 限制搜索范围（关键优化）
+            // 4. 限制搜索范围
             int search_limit = K * 10;
             while (!pq.empty() && candidate_neighbors.size() < search_limit) {
                 auto [neg_dist, cur_id] = pq.top();
