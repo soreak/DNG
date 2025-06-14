@@ -73,7 +73,7 @@ class DNGIndex {
                 size_t dim = buffer.shape[1];
 
                 // 2. 检查参数有效性
-                if (centroid_num <= 0 || K_neighbor <= 0 || iterations <= 0) {
+                if (centroid_num <= 0 || K_neighbor <= 0 || iterations < 0) {
                     throw std::runtime_error("Parameters must be positive (centroid_num=" + 
                                         std::to_string(centroid_num) + 
                                         ", K_neighbor=" + std::to_string(K_neighbor) + 
